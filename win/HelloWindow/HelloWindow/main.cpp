@@ -6,6 +6,15 @@
 #include <string.h>
 #include <tchar.h>
 
+
+// instead of loading the bmp as a separate file, we will embbed it as binary data
+#include "sample.bmp.h"
+// the picture is the BIN_DATA
+
+
+
+
+
 // The main window class name.
 static TCHAR szWindowClass[] = _T("DesktopApp");
 
@@ -104,6 +113,25 @@ int WINAPI WinMain(
     return (int)msg.wParam;
 }
 
+void build_bmp(const uint8_t* bmp, HBITMAP& hBitmap, BITMAP& bitmap) {
+
+    tagBITMAPFILEHEADER bfh = *(tagBITMAPFILEHEADER*)bmp;
+    tagBITMAPINFOHEADER bih = *(tagBITMAPINFOHEADER*)(bmp + sizeof(tagBITMAPFILEHEADER));
+    RGBQUAD             rgb = *(RGBQUAD*)(bmp + sizeof(tagBITMAPFILEHEADER) + sizeof(tagBITMAPINFOHEADER));
+
+    BITMAPINFO bi;
+    bi.bmiColors[0] = rgb;
+    bi.bmiHeader = bih;
+
+    const uint8_t* pPixels = (bmp + bfh.bfOffBits);
+    char* ppvBits;
+
+    hBitmap = CreateDIBSection(NULL, &bi, DIB_RGB_COLORS, (void**)&ppvBits, NULL, 0);
+    SetDIBits(NULL, hBitmap, 0, bih.biHeight, pPixels, &bi, DIB_RGB_COLORS);
+
+    GetObject(hBitmap, sizeof(BITMAP), &bitmap);
+}
+
 //  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
 //  PURPOSE:  Processes messages for the main window.
@@ -112,22 +140,19 @@ int WINAPI WinMain(
 //  WM_DESTROY  - post a quit message and return
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    PAINTSTRUCT ps;
-    HDC hdc;
-    TCHAR greeting[] = _T("Hello, Windows desktop!");
     static HBITMAP hBitmap = NULL;
+    static BITMAP  bitmap;
 
     switch (message)
     {
     case WM_CREATE:
-        hBitmap = (HBITMAP)LoadImage(hInst, L"sample.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+        build_bmp(BIN_DATA, hBitmap, bitmap);
         break;
 
     case WM_PAINT:
 
         PAINTSTRUCT     ps;
         HDC             hdc;
-        BITMAP          bitmap;
         HDC             hdcMem;
         HGDIOBJ         oldBitmap;
 
@@ -145,6 +170,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         EndPaint(hWnd, &ps);
         break;
+
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
