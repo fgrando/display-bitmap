@@ -115,19 +115,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     PAINTSTRUCT ps;
     HDC hdc;
     TCHAR greeting[] = _T("Hello, Windows desktop!");
+    static HBITMAP hBitmap = NULL;
 
     switch (message)
     {
+    case WM_CREATE:
+        hBitmap = (HBITMAP)LoadImage(hInst, L"sample.bmp", IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+        break;
+
     case WM_PAINT:
+
+        PAINTSTRUCT     ps;
+        HDC             hdc;
+        BITMAP          bitmap;
+        HDC             hdcMem;
+        HGDIOBJ         oldBitmap;
+
         hdc = BeginPaint(hWnd, &ps);
 
-        // Here your application is laid out.
-        // For this introduction, we just print out "Hello, Windows desktop!"
-        // in the top left corner.
-        TextOut(hdc,
-            5, 5,
-            greeting, _tcslen(greeting));
-        // End application-specific layout section.
+        hdcMem = CreateCompatibleDC(hdc);
+        oldBitmap = SelectObject(hdcMem, hBitmap);
+
+        GetObject(hBitmap, sizeof(bitmap), &bitmap);
+
+        BitBlt(hdc, 0, 0, bitmap.bmWidth, bitmap.bmHeight, hdcMem, 0, 0, SRCCOPY);
+
+        SelectObject(hdcMem, oldBitmap);
+        DeleteDC(hdcMem);
 
         EndPaint(hWnd, &ps);
         break;
