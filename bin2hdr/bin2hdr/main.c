@@ -8,6 +8,7 @@ Notes:
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 long  getFileSize(const char* filepath);
 long  readBinaryData(const char* filepath, char** buffer);
@@ -26,7 +27,7 @@ int main(int argc, char* argv[])
     char* outFileName = makeOutFileName(inFileName);
     printf("Input file\t'%s'\nOutput file\t'%s'\n", inFileName, outFileName);
 
-    char* inBinData = NULL;
+    uint8_t* inBinData = NULL;
     long inBinDataLen = readBinaryData(inFileName, &inBinData);
     FILE* outFile = openOutputFile(outFileName);
 
@@ -35,17 +36,18 @@ int main(int argc, char* argv[])
 
     /* include guards */
     const char* guardName = "BIN2HDR_INCL_H";
-    fprintf(outFile, "#ifndef %s\n#define %s\n", guardName, guardName);
+    fprintf(outFile, "#ifndef %s\n#define %s\n#include <stdint.h> /* uint8_t declaration */\n",
+        guardName, guardName);
 
     /* binary data name */
     const char* dataName = "BIN_DATA";
-    fprintf(outFile, "const char %s [%ld] = {\n", dataName, inBinDataLen);
+    fprintf(outFile, "const uint8_t %s [%ld] = {\n", dataName, inBinDataLen);
 
     /* the binary array */
     int valuesPerLine = 32;
     for (long i = 0; i < inBinDataLen; i++)
     {
-        fprintf(outFile, "0x%02X", inBinData[i] && 0xFF);
+        fprintf(outFile, "0x%02X", inBinData[i]);
 
         /* new line or separator */
         if ((i + 1) % valuesPerLine == 0) /* new line every N elements(increment i by one since 0 % N is always 0) */
