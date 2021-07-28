@@ -16,7 +16,7 @@ FILE* openOutputFile(const char* name);
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2) 
+    if (argc < 2)
     {
         printf("usage: %s <filename>\n", argv[0]);
         exit(EXIT_FAILURE);
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 
     /* binary data name */
     const char* dataName = "BIN_DATA";
-    fprintf(outFile, "const char* %s [%ld] = {\n", dataName, inBinDataLen);
+    fprintf(outFile, "const char %s [%ld] = {\n", dataName, inBinDataLen);
 
     /* the binary array */
     int valuesPerLine = 32;
@@ -52,7 +52,7 @@ int main(int argc, char* argv[])
         {
             fprintf(outFile, ",\n");
         }
-        else 
+        else
         {
             fprintf(outFile, ", ");
         }
