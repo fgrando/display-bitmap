@@ -85,7 +85,14 @@ int main(int argc, char* argv[])
 
 #ifdef WIN32
 
+#ifdef _WIN32
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
 #include <windows.h>
+#undef WIN32_LEAN_AND_MEAN
+#endif
+
 #include <sys/stat.h>	/* _S_IREAD */
 #include <fcntl.h>		/* _O_RDONLY */
 #include <io.h>		/* _SH_DENYRW */
